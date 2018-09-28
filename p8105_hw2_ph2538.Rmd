@@ -5,9 +5,12 @@ date: 2018-09-28
 output: github_document
 ---
 
-```{r setup, include = FALSE}
+```{r setup}
 library(tidyverse)
 library(ggplot2)
+library(readxl)
+library(devtools)
+
 ```
 
 The purpose of this file is to complete homework 2.
@@ -18,5 +21,25 @@ The purpose of this file is to complete homework 2.
 
 ```{r load}
 NYC_transit_data = read_csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+
+```
+## Problem 2
+
+```{r load problem 2}
+trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-3.xlsx")
+```
+
+
+## Problem 3
+
+```{r load problem 3}
+#devtools::install_github("p8105/p8105.datasets")
+library(p8105.datasets)
+
+data(brfss_smart2010)
+
+brfss_smart2010
+
+#df_name = brfss_smart2010
 ```
 
