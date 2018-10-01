@@ -51,7 +51,7 @@ These data are not tidy because the the routes are spread across multiple column
 ```{r questions_1}
 
 #distinct removes duplicated rows based on line and station name
-dim(distinct(NYC_transit_data, line, station_name))
+count(distinct(NYC_transit_data, line, station_name))
 #There are 465 distinct stations.
 
 #count how many stations are ADA compliant
@@ -63,12 +63,41 @@ mean(NYC_transit_data$vending == "NO" & NYC_transit_data$entry == TRUE)
 #Proportion is 0.0369379
 
 ```
+### Reformat data
+
+Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+
+```{r reformat_1}
+#For all routes, separate route number and name into distinct variables
+reform_NYC_transit = gather(NYC_transit_data, key = route_number, value = route_name, route1:route11)
+
+count(distinct(reform_NYC_transit, station_name, route_name == 'A'))
+#746 stations serve the A train
+
+table(reform_NYC_transit$route_name)
+#273 distinct stations serve the A  train
+
+length(which(reform_NYC_transit$route_name == 'A'))
+#273 stations serve A train
+
+length(which(reform_NYC_transit$route_name == 'A' & reform_NYC_transit$ada == TRUE))
+#107 stations serve A train and are ADA compliant
+
+
+distinct_A = distinct(reform_NYC_transit, station_name, route_name == 'A')
+table(distinct_A$`route_name == "A"`)
+
+```
 
 
 ## Problem 2
 
 ```{r load_2}
-trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx")
+trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx") %>%
+  janitor::clean_names()
+
+#specify the sheet in the Excel file and to omit columns containing notes (using the range argument and cell_cols() function)
+
 ```
 
 
@@ -82,6 +111,23 @@ data(brfss_smart2010)
 
 brfss_smart2010
 
-#df_name = brfss_smart2010
+janitor::clean_names(brfss_smart2010)
+
+#focus on the “Overall Health” topic
+#exclude variables for class, topic, question, sample size, and everything from lower confidence limit to GeoLocation
+
+clean_brfss = filter(brfss_smart2010, Topic == "Overall Health") %>%
+  select(Year, Locationabbr, Locationdesc, Response, Data_value) 
+
+
+#select(brfss_smart2010, -Class, -Topic, -Question, -Sample_Size, -Confidence_limit_Low:GeoLocation)
+
+#structure data so that responses (excellent to poor) are variables taking the value of Data_value
+
+clean_brfss$Response = clean_brfss$Data_value
+
+#create a new variable showing the proportion of responses that were “Excellent” or “Very Good”
+clean_brfss$exc_good_proportion = mean(clean_brfss$Response == "Excellent" & clean_brfss$Response == "Very Good")
+
 ```
 
