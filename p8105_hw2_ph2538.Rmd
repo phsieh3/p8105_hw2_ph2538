@@ -54,13 +54,17 @@ These data are not tidy because the the routes are spread across multiple column
 count(distinct(NYC_transit_data, line, station_name))
 #There are 465 distinct stations.
 
-#count how many stations are ADA compliant
-summary(NYC_transit_data$ada)
-#468 stations are ADA compliant.
+#count how many distinct stations are ADA compliant
+NYC_transit_data %>%
+  filter(ada == "TRUE") %>%
+  count(station_name, line, ada) %>%
+  summarise(n = n())
+#82 distinct stations are ADA compliant
 
 #proportion of station entrance/exit without vending allow entrance
-mean(NYC_transit_data$vending == "NO" & NYC_transit_data$entry == TRUE)
-#Proportion is 0.0369379
+NYC_vending = filter(NYC_transit_data, vending == "NO")
+mean(NYC_vending$entry == TRUE)
+#Proportion is 0.377
 
 ```
 ### Reformat data
@@ -71,21 +75,17 @@ Reformat data so that route number and route name are distinct variables. How ma
 #For all routes, separate route number and name into distinct variables
 reform_NYC_transit = gather(NYC_transit_data, key = route_number, value = route_name, route1:route11)
 
-count(distinct(reform_NYC_transit, station_name, route_name == 'A'))
-#746 stations serve the A train
+#How many distinct stations serve the A train?
+filter_NYC_transit_A = filter(reform_NYC_transit, route_name == 'A')
+count(distinct(filter_NYC_transit_A, line, station_name))
+#60 
 
-table(reform_NYC_transit$route_name)
-#273 distinct stations serve the A  train
-
-length(which(reform_NYC_transit$route_name == 'A'))
-#273 stations serve A train
-
-length(which(reform_NYC_transit$route_name == 'A' & reform_NYC_transit$ada == TRUE))
-#107 stations serve A train and are ADA compliant
-
-
-distinct_A = distinct(reform_NYC_transit, station_name, route_name == 'A')
-table(distinct_A$`route_name == "A"`)
+#of stations that serve A train, how many are ADA compliant?
+filter_NYC_transit_A %>%
+  filter(ada == "TRUE") %>%
+  count(station_name, line, ada) %>%
+  summarise(n = n())
+#Out of distinct stations that serve A train, 17 are ADA compliant
 
 ```
 
@@ -93,10 +93,12 @@ table(distinct_A$`route_name == "A"`)
 ## Problem 2
 
 ```{r load_2}
-trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx") %>%
+#specify the sheet in the Excel file and to omit columns containing notes (using the range argument and cell_cols() function)
+trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", range = cell_cols(1:14)) %>%
   janitor::clean_names()
 
-#specify the sheet in the Excel file and to omit columns containing notes (using the range argument and cell_cols() function)
+
+
 
 ```
 
