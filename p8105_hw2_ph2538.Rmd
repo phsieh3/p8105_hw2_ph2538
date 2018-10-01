@@ -128,7 +128,7 @@ janitor::clean_names(brfss_smart2010)
 clean_brfss = filter(brfss_smart2010, Topic == "Overall Health") %>%
   select(Year, Locationabbr, Locationdesc, Response, Data_value) %>%
   spread(key = Response, value = Data_value) %>%
-  separate(Locationdesc, into = c("state", "county"), sep = "-") %>%
+  separate(Locationdesc, into = c("state", "county"), sep = " - ") %>%
   select(-Locationabbr)
 
 
@@ -160,24 +160,13 @@ ggplot(brfss_2002, aes(x = Excellent)) + geom_histogram()
 
 #Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County (both in NY State) in each year from 2002 to 2010.
 
-# clean_brfss %>%
-#   mutate(exc_proportion = Excellent / 
-#   sum(Excellent:clean_brfss$'Very good'))
-#   filter(state == "NY ") %>%
-#   filter(county == ' New York County', county == ' Queens County')
-#   
-#   
-# 
-# clean_brfss$exc_proportion = (
-#   clean_brfss$Excellent) / 
-#   sum(clean_brfss$Excellent:clean_brfss$'Very good')
-# 
-# brfss_NY_Queens = filter(clean_brfss, county == "New York County", county == "Queens County")
-# brfss_NY = filter(clean_brfss, state == "NY ")
-# brfss_NYC_Queens = filter(brfss_NY, county == " New York County", county == " Queens County")
-# brfss_NYC_Queens = filter(clean_brfss, state == "NY ", county == " New York County", county == " Queens County")
-# 
-# ggplot(clean_brfss, aes(x = Year, y = exc_proportion)) + geom_point()
+clean_brfss$exc_proportion = (
+  clean_brfss$Excellent) /
+  sum(clean_brfss$Excellent:clean_brfss$'Very good')
+
+brfss_NYC_Queens = filter(clean_brfss, county == "New York County" | county == "Queens County")
+
+ggplot(brfss_NYC_Queens, aes(x = Year, y = exc_proportion)) + geom_point(aes(color = county), alpha = .5)
 
 ```
 
