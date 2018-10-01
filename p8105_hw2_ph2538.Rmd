@@ -94,11 +94,17 @@ filter_NYC_transit_A %>%
 
 ```{r load_2}
 #specify the sheet in the Excel file and to omit columns containing notes (using the range argument and cell_cols() function)
-trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", range = cell_cols(1:14)) %>%
-  janitor::clean_names()
+#omit rows that do not include dumpster-specific data
+#rounds the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer)
+trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols(1:14)) %>%
+  janitor::clean_names() %>%
+  filter(!is.na(dumpster)) %>%
+  mutate(sports_balls = as.integer(sports_balls))
 
+head(trash_wheel_data)
+dim(trash_wheel_data)
 
-
+#Read and clean precipitation data for 2016 and 2017. For each, omit rows without precipitation data and add a variable year. Next, combine datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
 
 ```
 
@@ -117,19 +123,61 @@ janitor::clean_names(brfss_smart2010)
 
 #focus on the “Overall Health” topic
 #exclude variables for class, topic, question, sample size, and everything from lower confidence limit to GeoLocation
+#structure data so that responses (excellent to poor) are variables taking the value of Data_value
 
 clean_brfss = filter(brfss_smart2010, Topic == "Overall Health") %>%
-  select(Year, Locationabbr, Locationdesc, Response, Data_value) 
+  select(Year, Locationabbr, Locationdesc, Response, Data_value) %>%
+  spread(key = Response, value = Data_value) %>%
+  separate(Locationdesc, into = c("state", "county"), sep = "-") %>%
+  select(-Locationabbr)
 
 
 #select(brfss_smart2010, -Class, -Topic, -Question, -Sample_Size, -Confidence_limit_Low:GeoLocation)
 
-#structure data so that responses (excellent to poor) are variables taking the value of Data_value
-
-clean_brfss$Response = clean_brfss$Data_value
-
 #create a new variable showing the proportion of responses that were “Excellent” or “Very Good”
-clean_brfss$exc_good_proportion = mean(clean_brfss$Response == "Excellent" & clean_brfss$Response == "Very Good")
+clean_brfss$exc_vgood_proportion = (
+  clean_brfss$Excellent + clean_brfss$'Very good') / 
+  sum(clean_brfss$Excellent:clean_brfss$'Very good')
+
+#How many unique locations are included in the dataset? Is every state represented? What state is observed the most?
+
+length(unique(clean_brfss$county))
+#351 counties
+
+length(unique(clean_brfss$state))
+# Yes, every state is represented. There are 51 unique states because it includes Washington DC.
+
+table(clean_brfss$state)
+# The results show that New Jersey is observed the most with 146 observations.
+
+#In 2002, what is the median of the “Excellent” response value?
+brfss_2002 = filter(clean_brfss, Year == '2002')
+median(brfss_2002$Excellent, na.rm = TRUE)
+#The median values is 23.6
+
+#Make a histogram of “Excellent” response values in the year 2002.
+ggplot(brfss_2002, aes(x = Excellent)) + geom_histogram()
+
+#Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County (both in NY State) in each year from 2002 to 2010.
+
+# clean_brfss %>%
+#   mutate(exc_proportion = Excellent / 
+#   sum(Excellent:clean_brfss$'Very good'))
+#   filter(state == "NY ") %>%
+#   filter(county == ' New York County', county == ' Queens County')
+#   
+#   
+# 
+# clean_brfss$exc_proportion = (
+#   clean_brfss$Excellent) / 
+#   sum(clean_brfss$Excellent:clean_brfss$'Very good')
+# 
+# brfss_NY_Queens = filter(clean_brfss, county == "New York County", county == "Queens County")
+# brfss_NY = filter(clean_brfss, state == "NY ")
+# brfss_NYC_Queens = filter(brfss_NY, county == " New York County", county == " Queens County")
+# brfss_NYC_Queens = filter(clean_brfss, state == "NY ", county == " New York County", county == " Queens County")
+# 
+# ggplot(clean_brfss, aes(x = Year, y = exc_proportion)) + geom_point()
 
 ```
 
