@@ -106,8 +106,32 @@ dim(trash_wheel_data)
 
 #Read and clean precipitation data for 2016 and 2017. For each, omit rows without precipitation data and add a variable year. Next, combine datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
 
-```
+Precipitation_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2017 Precipitation", skip = 1) %>%
+  janitor::clean_names() %>%
+  filter(total != 'NA') %>%
+  filter(month != 'NA') %>%
+  mutate(year = 2017)
 
+Precipitation_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", skip = 1) %>%
+  janitor::clean_names() %>%
+  filter(month != 'NA') %>%
+  mutate(year = 2016)
+
+#combine datasets
+combine_prec = left_join(Precipitation_2016, Precipitation_2017, by = "month" )
+
+#convert month to a character variable (the variable month.name is built into R and should be useful).
+combine_prec$month = month.name
+
+combine_prec = rename(combine_prec, Precip_2016 = total.x, year_2016 = year.x, Precip_2017 = total.y, year_2017 = year.y)
+
+combine_prec
+```
+Write a paragraph about these data; you are encouraged to use inline R. Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2017? What was the median number of sports balls in a dumpster in 2016?
+
+For trash wheel data, the dimension of the dataset (exluding NA) is `r dim(trash_wheel_data)` which shows that there are 216 observations. Some key variables include weight (in tons), plastic bottles, and number of homes powered. The total weight tons collected from 2014 to 2017 is `r sum(trash_wheel_data$weight_tons)`, total number of plastic bottles collected is `r sum(trash_wheel_data$plastic_bottles)`, and total number of homes powered is `r sum(trash_wheel_data$homes_powered)`. The median number of sports balls in a dumpster in 2016 is `r trash_2016 = filter(trash_wheel_data, year == 2016)` `r median(trash_2016$sports_balls)`
+
+For precipitation data, the number of observations in 2016 was `r length(combine_prec$Precip_2016)` and the number of observations in 2017 was `r length(which(combine_prec$Precip_2017 != 'NA'))`. This means that for 2016, there is precipitation data for all 12 months of the year, but for 2017, there is only data for the first eight months of the year (January to August). The total precipitation in 2017 is `r sum(Precipitation_2017$total)`. 
 
 ## Problem 3
 
