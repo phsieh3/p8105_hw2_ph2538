@@ -117,7 +117,7 @@ filter_NYC_transit_A %>%
 #specify the sheet in the Excel file and to omit columns containing notes (using the range argument and cell_cols() function)
 #omit rows that do not include dumpster-specific data
 #rounds the number of sports balls to the nearest integer and converts the result to an integer variable (using as.integer)
-trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols(1:14)) %>%
+trash_wheel_data = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "Mr. Trash Wheel", range = cell_cols(1:14)) %>%
   janitor::clean_names() %>%
   filter(!is.na(dumpster)) %>%
   mutate(sports_balls = as.integer(sports_balls))
@@ -133,14 +133,15 @@ dim(trash_wheel_data)
 #For each, omit rows without precipitation data and add a variable year. 
 #Next, combine datasets and convert month to a character variable (the variable month.name is built into R and should be useful).
 
-Precipitation_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2017 Precipitation", skip = 1) %>%
+Precipitation_2017 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2017 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
   filter(total != 'NA') %>%
   filter(month != 'NA') %>%
   mutate(year = 2017)
 
-Precipitation_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = "2016 Precipitation", skip = 1) %>%
+Precipitation_2016 = read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = "2016 Precipitation", skip = 1) %>%
   janitor::clean_names() %>%
+  filter(total != 'NA') %>%
   filter(month != 'NA') %>%
   mutate(year = 2016)
 
@@ -156,9 +157,9 @@ combine_prec = rename(combine_prec, precip_2016 = total.x, year_2016 = year.x, p
 combine_prec
 ```
 
-For trash wheel data, the dimension of the dataset (exluding NA) is `r dim(trash_wheel_data)` which shows that there are 216 observations. Some key variables include dumpster number, date, weight (in tons), plastic bottles, and number of homes powered. The total weight tons collected from 2014 to 2017 across all dumpsters is `r sum(trash_wheel_data$weight_tons)`, total number of plastic bottles collected is `r sum(trash_wheel_data$plastic_bottles)`, and total number of homes powered is `r sum(trash_wheel_data$homes_powered)`. The median number of sports balls in a dumpster in 2016 is `r trash_2016 = filter(trash_wheel_data, year == 2016)` `r median(trash_2016$sports_balls)`.
+For trash wheel data, the dimension of the dataset (exluding NA) is `r dim(trash_wheel_data)` which shows that there are 285 observations. Some key variables include dumpster number, date, weight (in tons), plastic bottles, and number of homes powered. The total weight tons collected from 2014 to 2018 across all dumpsters is `r sum(trash_wheel_data$weight_tons)`, total number of plastic bottles collected is `r sum(trash_wheel_data$plastic_bottles)`, and total number of homes powered is `r sum(trash_wheel_data$homes_powered)`. The median number of sports balls in a dumpster in 2016 is `r trash_2016 = filter(trash_wheel_data, year == 2016)` `r median(trash_2016$sports_balls)`.
 
-For precipitation data, the number of observations in 2016 was `r length(combine_prec$precip_2016)` and the number of observations in 2017 was `r length(which(combine_prec$precip_2017 != 'NA'))`. This means that for 2016, there is precipitation data for all 12 months of the year, but for 2017, there is only data for the first eight months of the year (January to August). The total precipitation in 2017 is `r sum(Precipitation_2017$total)`. 
+For precipitation data, the number of observations in 2016 was `r length(combine_prec$precip_2016)` and the number of observations in 2017 was `r length(which(combine_prec$precip_2017 != 'NA'))`. This means that for both 2017 and 2016, there is precipitation data for all 12 months of the year. The total precipitation in 2017 is `r sum(Precipitation_2017$total)`. 
 
 ## Problem 3
 
@@ -233,7 +234,7 @@ median(brfss_2002$Excellent, na.rm = TRUE)
 #### Question 3
 ```{r histogram}
 #Make a histogram of “Excellent” response values in the year 2002.
-ggplot(brfss_2002, aes(x = Excellent)) + geom_histogram()
+ggplot(brfss_2002, aes(x = Excellent)) + geom_histogram() + labs(title = "Excellent Response Values in 2002")
 ```
 
 #### Question 4
@@ -246,5 +247,5 @@ clean_brfss$exc_proportion = (
 
 brfss_NYC_Queens = filter(clean_brfss, county == "New York County" | county == "Queens County")
 
-ggplot(brfss_NYC_Queens, aes(x = Year, y = exc_proportion)) + geom_point(aes(color = county), alpha = .5)
+ggplot(brfss_NYC_Queens, aes(x = Year, y = exc_proportion)) + geom_point(aes(color = county), alpha = .5) + labs(title = "Excellent Response Values in 2 Counties", y ="Proportion of Excellent")
 ```
