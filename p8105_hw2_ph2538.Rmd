@@ -1,7 +1,7 @@
 ---
 title: "p8105_hw2_ph2538"
 author: "Pei Yang Hsieh"
-date: 2018-10-1
+date: 2018-10-5
 output: github_document
 ---
 
@@ -28,7 +28,7 @@ NYC_transit_data = read_csv(file = "./data/NYC_Transit_Subway_Entrance_And_Exit_
   select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry, vending, entrance_type, ada) %>%
   mutate(entry = recode(entry, 'YES' = "TRUE", 'NO' = "FALSE"))
 ```
-This dataset includes variables on line, station name, station latitude and longitude, routes, entry, vending, entrance type, and ADA compliance. My data cleaning steps have included loading the data and cleaning the variable names, so they are all in snake case. Next, I selected only the variables that I needed, discarding the rest. Lastly, I converted the entry variable from a character to a logical variable.
+This dataset includes variables on line, station name, station latitude and longitude, routes, entry, vending, entrance type, and ADA compliance. My data cleaning steps have included loading the data and cleaning the variable names using janitor::clean_names(), so all variable names are in lower snake case. Next, I selected only the variables that I needed, discarding the rest, using select command. Lastly, I converted the entry variable from a character to a logical variable using the mutate and recode commands.
 
 The dimensions of the resulting dataset are `r dim(NYC_transit_data)`
 
@@ -66,7 +66,7 @@ NYC_transit_data %>%
 
 ```
 
-2. 82 distinct stations are ADA compliant.
+2. 84 distinct stations are ADA compliant.
 
 ```{r distinct_entry}
 #proportion of station entrance/exit without vending allow entrance
@@ -157,9 +157,9 @@ combine_prec = rename(combine_prec, precip_2016 = total.x, year_2016 = year.x, p
 combine_prec
 ```
 
-For trash wheel data, the dimension of the dataset (exluding NA) is `r dim(trash_wheel_data)` which shows that there are 285 observations. Some key variables include dumpster number, date, weight (in tons), plastic bottles, and number of homes powered. The total weight tons collected from 2014 to 2018 across all dumpsters is `r sum(trash_wheel_data$weight_tons)`, total number of plastic bottles collected is `r sum(trash_wheel_data$plastic_bottles)`, and total number of homes powered is `r sum(trash_wheel_data$homes_powered)`. The median number of sports balls in a dumpster in 2016 is `r trash_2016 = filter(trash_wheel_data, year == 2016)` `r median(trash_2016$sports_balls)`.
+For trash wheel data, the dimension of the dataset (exluding NA) is `r dim(trash_wheel_data)` which shows that there are 285 observations and 14 variables. Key variables include dumpster number, date (including month and year), weight (in tons), volume (in cubic yards), variables for different types of trash, and number of homes powered. For example, the total weight tons collected from 2014 to 2018 across all dumpsters is `r sum(trash_wheel_data$weight_tons)`, total number of plastic bottles collected is `r sum(trash_wheel_data$plastic_bottles)`, and total number of homes powered is `r sum(trash_wheel_data$homes_powered)`. The median number of sports balls in a dumpster in 2016 is `r trash_2016 = filter(trash_wheel_data, year == 2016)` `r median(trash_2016$sports_balls)`.
 
-For precipitation data, the number of observations in 2016 was `r length(combine_prec$precip_2016)` and the number of observations in 2017 was `r length(which(combine_prec$precip_2017 != 'NA'))`. This means that for both 2017 and 2016, there is precipitation data for all 12 months of the year. The total precipitation in 2017 is `r sum(Precipitation_2017$total)`. 
+For precipitation data, the number of observations in 2016 was `r length(combine_prec$precip_2016)` and the number of observations in 2017 was `r length(which(combine_prec$precip_2017 != 'NA'))`. This means that for both 2017 and 2016, there is precipitation data for all 12 months of the year, for a total of 24 observations. The key variables are month and amount of precipitation for both 2016 and 2017. The total precipitation in 2017 is `r sum(Precipitation_2017$total)`. 
 
 ## Problem 3
 
@@ -193,8 +193,6 @@ clean_brfss$exc_vgood_proportion = (
 
 ### Questions for Problem 3
 
-
-
 ------------------------------------------------------------
 1.  How many unique locations are included in the dataset? Is every state represented? What state is observed the most?
 
@@ -208,16 +206,16 @@ clean_brfss$exc_vgood_proportion = (
 ```{r location_3}
 #How many unique locations are included in the dataset? Is every state represented? What state is observed the most?
 
-length(unique(clean_brfss$county))
+count(distinct(clean_brfss, state, county))
 
 length(unique(clean_brfss$state))
 
-table(clean_brfss$state)
+sort(table(clean_brfss$state))
 ```
 
-1. There are 351 unique counties. 
+1. There are `r count(distinct(clean_brfss, state, county))` unique locations. 
 
-Yes, every state is represented. There are 51 unique states because it includes Washington DC.
+Yes, every state is represented. There are `r length(unique(clean_brfss$state))` unique states because it includes Washington DC.
 
 The results show that New Jersey is observed the most with 146 observations.
 
